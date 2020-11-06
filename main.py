@@ -76,6 +76,7 @@ class Sudoku:
         return options
 
     def exclude_options(self):
+        self.options = self.init_options()
         for r in range(self.grid.shape[0]):
             for c in range(self.grid.shape[1]):
                 self._exclude_row_and_column(r, c)
