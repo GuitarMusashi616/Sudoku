@@ -45,7 +45,7 @@ def hard_puzzle():
 
 class Sudoku:
     def __init__(self):
-        self.grid = easy_puzzle()
+        self.grid = hard_puzzle()
         self.options = self.init_options()
 
     def __repr__(self):
@@ -206,18 +206,61 @@ class Sudoku:
                     return False
         return True
 
+    def _remove_non_unique_in_coord(self, r, c, row_options_count):
+        coord_options_set = self.options[r][c]
+        new_coord_options_set = set()
+
+        for num in coord_options_set:
+            if row_options_count[num] == 1:
+                new_coord_options_set.add(num)
+
+        self.options[r][c] = new_coord_options_set
+
+    def _naked_singles(self, r, row_options_count):
+        for c in range(self.grid.shape[1]):
+            coord_options_set = self.options[r][c]
+            coord_already_filtered = False
+            for num in coord_options_set:
+                if row_options_count[num] == 1 and not coord_already_filtered:
+                    self._remove_non_unique_in_coord(r, c, row_options_count)
+                    coord_already_filtered = True
+
+    def _unique_option_rows(self):
+        for r in range(self.grid.shape[0]):
+            row_options_count = self._unique_option_row(r)
+            self._naked_singles(r, row_options_count)
+
+    def _unique_option_row(self, r):
+        row_options_count = np.zeros(10, int)
+        for c in range(self.grid.shape[1]):
+            coord_options_set = self.options[r][c]
+            for i in coord_options_set:
+                row_options_count[i] += 1
+        return row_options_count
+
+
+    def _unique_option_columns(self):
+        pass
+
+    def _unique_option_column(self, c):
+        pass
+
     def recurse(self):
-        if not self.passes_constraints():
-            return
-        elif self.is_complete():
+        # if not self.passes_constraints():
+        #     return
+        if self.is_complete():
             return self
 
         self.exclude_options()
+        self._unique_option_rows()
 
         queue = []
         for r in range(self.grid.shape[0]):
             for c in range(self.grid.shape[1]):
                 options = self.options[r][c]
+                if options and isinstance(options, set) and len(options) == 0:
+                    return
+
                 if options:
                     node = Node(r, c, options)
                     queue.append(node)
@@ -255,3 +298,4 @@ class Node:
 if __name__ == '__main__':
     s = Sudoku()
     print(s.recurse())
+    print(s)
