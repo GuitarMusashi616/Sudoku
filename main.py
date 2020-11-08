@@ -260,6 +260,53 @@ class Sudoku:
                 col_options_count[i] += 1
         return col_options_count
 
+    def _naked_boxes(self, rows, cols, options_count):
+        for r in rows:
+            for c in cols:
+                coord_options_set = self.options[r][c]
+                coord_already_filtered = False
+                for num in coord_options_set:
+                    if options_count[num] == 1 and not coord_already_filtered:
+                        self._remove_non_unique_in_coord(r, c, options_count)
+                        coord_already_filtered = True
+
+    def _unique_option_boxes(self):
+        box_1_options_count = self._unique_option_box(range(3), range(3))
+        self._naked_boxes(range(3), range(3), box_1_options_count)
+
+        box_2_options_count = self._unique_option_box(range(3), range(3, 6))
+        self._naked_boxes(range(3), range(3, 6), box_2_options_count)
+
+        box_3_options_count = self._unique_option_box(range(3), range(6, 9))
+        self._naked_boxes(range(3), range(6, 9), box_3_options_count)
+
+        box_4_options_count = self._unique_option_box(range(3, 6), range(3))
+        self._naked_boxes(range(3, 6), range(3), box_4_options_count)
+
+        box_5_options_count = self._unique_option_box(range(3, 6), range(3, 6))
+        self._naked_boxes(range(3, 6), range(3, 6), box_5_options_count)
+
+        box_6_options_count = self._unique_option_box(range(3, 6), range(6, 9))
+        self._naked_boxes(range(3, 6), range(6, 9), box_6_options_count)
+
+        box_7_options_count = self._unique_option_box(range(6, 9), range(3))
+        self._naked_boxes(range(6, 9), range(3), box_7_options_count)
+
+        box_8_options_count = self._unique_option_box(range(6, 9), range(3, 6))
+        self._naked_boxes(range(6, 9), range(3, 6), box_8_options_count)
+
+        box_9_options_count = self._unique_option_box(range(6, 9), range(6, 9))
+        self._naked_boxes(range(6, 9), range(6, 9), box_9_options_count)
+
+    def _unique_option_box(self, rows, cols):
+        box_options_count = np.zeros(10, int)
+        for r in rows:
+            for c in cols:
+                coord_options_set = self.options[r][c]
+                for i in coord_options_set:
+                    box_options_count[i] += 1
+        return box_options_count
+
     def recurse(self):
         # if not self.passes_constraints():
         #     return
@@ -269,6 +316,7 @@ class Sudoku:
         self.exclude_options()
         self._unique_option_rows()
         self._unique_option_columns()
+        self._unique_option_boxes()
 
         queue = []
         for r in range(self.grid.shape[0]):
@@ -293,9 +341,6 @@ class Sudoku:
                 if solution:
                     return solution
                 self.grid[node.r][node.c] = 0
-
-    def minimum_values(self):
-        pass
 
 
 class Node:
